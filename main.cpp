@@ -1,10 +1,17 @@
+#include <thread>
+#include <mutex>
 #include "board.hpp"
+#include "player.hpp"
+using namespace std;
 
 
-void main(int argc, char const *argv[])
+
+
+int main(int argc, char const *argv[])
 {
-	Board* board = new Board();
+	Board* b = new Board();
 
-	delete board;
+
+	delete b;
 	return 0;
 }
