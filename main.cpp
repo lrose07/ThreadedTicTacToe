@@ -1,196 +1,106 @@
 #include <iostream>
 using namespace std;
 
-char square[10] = {'o','1','2','3','4','5','6','7','8','9'};
+char boardGrid[10] = {'z','1','2','3','4','5','6','7','8','9'};
 
-int checkwin();
-void board();
-
-int main()
-{
-	int player = 1,i,choice;
-
-    char mark;
-    do
-    {
-        board();
-        player=(player%2)?1:2;
-
-        cout << "Player " << player << ", enter a number:  ";
-        cin >> choice;
-
-        mark=(player == 1) ? 'X' : 'O';
-
-        if (choice == 1 && square[1] == '1')
-
-            square[1] = mark;
-        else if (choice == 2 && square[2] == '2')
-
-            square[2] = mark;
-        else if (choice == 3 && square[3] == '3')
-
-            square[3] = mark;
-        else if (choice == 4 && square[4] == '4')
-
-            square[4] = mark;
-        else if (choice == 5 && square[5] == '5')
-
-            square[5] = mark;
-        else if (choice == 6 && square[6] == '6')
-
-            square[6] = mark;
-        else if (choice == 7 && square[7] == '7')
-
-            square[7] = mark;
-        else if (choice == 8 && square[8] == '8')
-
-            square[8] = mark;
-        else if (choice == 9 && square[9] == '9')
-
-            square[9] = mark;
-        else
-        {
-            cout<<"Invalid move ";
-
-            player--;
-            cin.ignore();
-            cin.get();
-        }
-        i=checkwin();
-
-        player++;
-    }while(i==-1);
-    board();
-    if(i==1)
-
-        cout<<"==>\aPlayer "<<--player<<" win ";
-    else
-        cout<<"==>\aGame draw";
-
-    cin.ignore();
-    cin.get();
-    return 0;
-}
-
-/*********************************************
-    FUNCTION TO RETURN GAME STATUS
-    1 FOR GAME IS OVER WITH RESULT
-    -1 FOR GAME IS IN PROGRESS
-    O GAME IS OVER AND NO RESULT
-**********************************************/
-
-int checkwin()
-{
-    if (square[1] == square[2] && square[2] == square[3])
-
-        return 1;
-    else if (square[4] == square[5] && square[5] == square[6])
-
-        return 1;
-    else if (square[7] == square[8] && square[8] == square[9])
-
-        return 1;
-    else if (square[1] == square[4] && square[4] == square[7])
-
-        return 1;
-    else if (square[2] == square[5] && square[5] == square[8])
-
-        return 1;
-    else if (square[3] == square[6] && square[6] == square[9])
-
-        return 1;
-    else if (square[1] == square[5] && square[5] == square[9])
-
-        return 1;
-    else if (square[3] == square[5] && square[5] == square[7])
-
-        return 1;
-    else if (square[1] != '1' && square[2] != '2' && square[3] != '3' 
-                    && square[4] != '4' && square[5] != '5' && square[6] != '6' 
-                  && square[7] != '7' && square[8] != '8' && square[9] != '9')
-
+int hasSomeoneWon() {
+    if ((boardGrid[1] == boardGrid[2] && boardGrid[2] == boardGrid[3]) ||
+    	(boardGrid[4] == boardGrid[5] && boardGrid[5] == boardGrid[6]) ||
+    	(boardGrid[7] == boardGrid[8] && boardGrid[8] == boardGrid[9]) ||
+    	(boardGrid[1] == boardGrid[4] && boardGrid[4] == boardGrid[7]) ||
+    	(boardGrid[2] == boardGrid[5] && boardGrid[5] == boardGrid[8]) ||
+    	(boardGrid[3] == boardGrid[6] && boardGrid[6] == boardGrid[9]) ||
+    	(boardGrid[1] == boardGrid[5] && boardGrid[5] == boardGrid[9]) ||
+    	(boardGrid[3] == boardGrid[5] && boardGrid[5] == boardGrid[7])) {
+    		return 1;
+    	}
+    else if (boardGrid[1] != '1' && boardGrid[2] != '2' && boardGrid[3] != '3' 
+                    && boardGrid[4] != '4' && boardGrid[5] != '5' && boardGrid[6] != '6' 
+                  && boardGrid[7] != '7' && boardGrid[8] != '8' && boardGrid[9] != '9')
         return 0;
     else
         return -1;
 }
 
-
-/*******************************************************************
-     FUNCTION TO DRAW BOARD OF TIC TAC TOE WITH PLAYERS MARK
-********************************************************************/
-
-
-void board()
-{
-    system("cls");
-    cout << "\n\n\tTic Tac Toe\n\n";
-
-    cout << "Player 1 (X)  -  Player 2 (O)" << endl << endl;
-    cout << endl;
-
-    cout << "     |     |     " << endl;
-    cout << "  " << square[1] << "  |  " << square[2] << "  |  " << square[3] << endl;
-
-    cout << "_____|_____|_____" << endl;
-    cout << "     |     |     " << endl;
-
-    cout << "  " << square[4] << "  |  " << square[5] << "  |  " << square[6] << endl;
-
-    cout << "_____|_____|_____" << endl;
-    cout << "     |     |     " << endl;
-
-    cout << "  " << square[7] << "  |  " << square[8] << "  |  " << square[9] << endl;
-
-    cout << "     |     |     " << endl << endl;
+void drawBoard() {
+    cout << endl << endl << "Let's Play Tic Tac Toe!" << endl << endl;
+    cout << " " << boardGrid[1] << " | " << boardGrid[2] << " | " << boardGrid[3] << endl;
+    cout << "---+---+---" << endl;
+    cout << " " << boardGrid[4] << " | " << boardGrid[5] << " | " << boardGrid[6] << endl;
+    cout << "---+---+---" << endl;
+    cout << " " << boardGrid[7] << " | " << boardGrid[8] << " | " << boardGrid[9] << endl;
 }
 
-/*******************************************************************
-                END OF PROJECT
-********************************************************************/
+char getComputerMove() {
+	int tempRandom = (rand() % 9) + 1;
+	return tempRandom;
+}
 
+int main() {
+	srand(time(NULL));
+	int player = 1, i, computerMove;
+    char symbol;
 
+    do {
+        drawBoard();
+        player = (player % 2) ? 1 : 2;
 
-// #include <thread>
-// #include <mutex>
-// #include <iostream>
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include "board.hpp"
-// #include "player.hpp"
-// using namespace std;
+        do {
+        	computerMove = getComputerMove();
+        } while (boardGrid[computerMove] == 'X' || boardGrid[computerMove] == 'O');
 
+        symbol=(player == 1) ? 'X' : 'O';
 
-// void hello() {
-// 	cout << "Hello" << endl;
-// }
+        if (computerMove == 1 && boardGrid[1] == '1') {
+        	boardGrid[1] = symbol;
+        }
+        else if (computerMove == 2 && boardGrid[2] == '2') {
+        	boardGrid[2] = symbol;
+        }
+        else if (computerMove == 3 && boardGrid[3] == '3') {
+        	boardGrid[3] = symbol;
+        }
+        else if (computerMove == 4 && boardGrid[4] == '4') {
+        	boardGrid[4] = symbol;
+        }
+        else if (computerMove == 5 && boardGrid[5] == '5') {
+        	boardGrid[5] = symbol;
+        }
+        else if (computerMove == 6 && boardGrid[6] == '6') {
+        	boardGrid[6] = symbol;
+        }
+        else if (computerMove == 7 && boardGrid[7] == '7') {
+        	boardGrid[7] = symbol;
+        }
+        else if (computerMove == 8 && boardGrid[8] == '8') {
+        	boardGrid[8] = symbol;
+        }
+        else if (computerMove == 9 && boardGrid[9] == '9') {
+        	boardGrid[9] = symbol;
+        }
+        // else {
+        //     cout << "Can't move there! Try again";
 
-// void add(int x) {
-// 	int y = 2;
+        //     player--;
+        //     cin.ignore();
+        //     cin.get();
+        // }
 
-// 	cout << (x + y) << endl;
-// }
+        i = hasSomeoneWon();
 
-// int main(int argc, char const *argv[])
-// {
-// 	cout << "start" << endl;
+        player++;
+    } while(i == -1);
 
-// 	thread one(hello);
-// 	//thread two(add, 2);
+    drawBoard();
 
-// 	cout << "running threads" << endl;
+    if(i == 1) {
+    	cout << "Player " << --player << " win ";
+    }
+    else {
+    	cout << "No one wins!";
+    }
 
-// 	// one.join();
-// 	// two.join();
-
-// 	cout << "done" << endl;
-
-// 	return 0;
-// 	// Board* b = new Board();
-
-
-// 	// delete b;
-// 	// return 0;
-
-
-
-// }
+    cin.ignore();
+    cin.get();
+    return 0;
+}
