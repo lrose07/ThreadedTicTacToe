@@ -38,7 +38,7 @@ char getComputerMove() {
 
 int main() {
 	srand(time(NULL));
-	int player = 1, i, computerMove;
+	int player = 1, anyoneWonYet, computerMove;
     char symbol;
 
     do {
@@ -78,22 +78,15 @@ int main() {
         else if (computerMove == 9 && boardGrid[9] == '9') {
         	boardGrid[9] = symbol;
         }
-        // else {
-        //     cout << "Can't move there! Try again";
 
-        //     player--;
-        //     cin.ignore();
-        //     cin.get();
-        // }
-
-        i = hasSomeoneWon();
+        anyoneWonYet = hasSomeoneWon();
 
         player++;
-    } while(i == -1);
+    } while(anyoneWonYet == -1);
 
     drawBoard();
 
-    if(i == 1) {
+    if(anyoneWonYet == 1) {
     	cout << "Player " << --player << " win ";
     }
     else {
