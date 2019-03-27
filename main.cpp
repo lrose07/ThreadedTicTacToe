@@ -1,8 +1,149 @@
 #include <iostream>
+#include <thread>
 using namespace std;
 
+/*
+ * Lauren Rose
+ * ITEC 371
+ * Department of Information Technology
+ * Radford University
+ *
+ * This program uses a tic-tac-toe game to demonstrate
+ * the use of threads.
+ *
+ * v0.1
+ */
+
+//\
+Global vars
 char boardGrid[10] = {'z','1','2','3','4','5','6','7','8','9'};
 
+pthread_mutex_t mutex;
+int mutexInt = pthread_mutex_init(&mutex, NULL);
+
+bool isPlayerOneTurn = false;
+bool isPlayerTwoTurn = false;
+int player = 1;
+bool gameWon = false;
+int playerTurn = 0;
+int lastToMove = 2;
+char symbol;
+int winner;
+
+//\
+Formard declarations
+void drawBoard();
+int hasSomeoneWon();
+char getComputerMove();
+void drawBoard();
+void processWinner();
+void processDraw();
+
+//\
+Thread function for player 1
+void* playerOneTurn(void*) {
+    while(true) {
+        if(isPlayerOneTurn) {
+            pthread_mutex_lock(&mutex);
+            int computerMove = getComputerMove();
+            symbol = 'X';
+            boardGrid[computerMove] = symbol;
+        }
+        lastToMove = 1;
+        isPlayerOneTurn = false;
+        pthread_mutex_unlock(&mutex);
+    }
+}
+
+//\
+Thread function for player 2
+void* playerTwoTurn(void*) {
+    while(true) {
+        if (isPlayerTwoTurn) {
+            pthread_mutex_lock(&mutex);
+            int computerMove = getComputerMove();
+            symbol = 'O';
+            boardGrid[computerMove] = symbol;
+        }
+        lastToMove = 2;
+        isPlayerTwoTurn = false;
+        pthread_mutex_unlock(&mutex);
+    }
+}
+
+//\
+Thread function for the main game
+void* game(void*) {
+
+    pthread_t p1Thread;
+    pthread_create(&p1Thread, NULL, &playerOneTurn, NULL);
+    pthread_t p2Thread;
+    pthread_create(&p2Thread, NULL, &playerTwoTurn, NULL);
+
+    while(!gameWon) {
+        pthread_mutex_lock(&mutex);
+
+        if (playerTurn == 0) {
+            cout << "game thread checking stuff" << endl;
+            drawBoard();
+            if (hasSomeoneWon() == 1) {
+                processWinner();
+                break;
+            } else if (hasSomeoneWon() == 0) {
+                processDraw();
+                break;
+            } else {
+                if (lastToMove == 1) {
+                    playerTurn = 2;
+                    isPlayerTwoTurn = true;
+                } else if (lastToMove == 2) {
+                    playerTurn = 1;
+                    isPlayerOneTurn = true;
+                }
+            }
+
+        } else if (playerTurn == 1) {
+            cout << "Player one moving" << endl;
+            isPlayerOneTurn = true;
+            isPlayerTwoTurn = false;
+            playerTurn = 0;
+        } else if (playerTurn == 2) {
+            cout << "Player two moving" << endl;
+            isPlayerOneTurn = false;
+            isPlayerTwoTurn = true;
+            playerTurn = 0;
+        }
+
+        pthread_mutex_unlock(&mutex);
+    }
+
+    drawBoard();
+
+    // pthread_join(p1Thread, NULL);
+    // pthread_join(p2Thread, NULL);
+}
+
+//\
+Outputs the winner based on who was the last to \
+move when the win condition was met
+void processWinner() {
+    if (lastToMove == 1) {
+        winner = 1;
+    } else if (lastToMove == 2) {
+        winner = 2;
+    }
+    cout << "Player " << winner << " win " << endl;
+}
+
+//\
+Outputs when all spaces have been filled and \
+neither player satisfies the win condition
+void processDraw() {
+    cout << "No one wins!" << endl;
+}
+
+//\
+Checks to see if the board contains a win condition
 int hasSomeoneWon() {
     if ((boardGrid[1] == boardGrid[2] && boardGrid[2] == boardGrid[3]) ||
     	(boardGrid[4] == boardGrid[5] && boardGrid[5] == boardGrid[6]) ||
@@ -13,6 +154,7 @@ int hasSomeoneWon() {
     	(boardGrid[1] == boardGrid[5] && boardGrid[5] == boardGrid[9]) ||
     	(boardGrid[3] == boardGrid[5] && boardGrid[5] == boardGrid[7])) {
     		return 1;
+            gameWon = true;
     	}
     else if (boardGrid[1] != '1' && boardGrid[2] != '2' && boardGrid[3] != '3' 
                     && boardGrid[4] != '4' && boardGrid[5] != '5' && boardGrid[6] != '6' 
@@ -22,6 +164,8 @@ int hasSomeoneWon() {
         return -1;
 }
 
+//\
+Draws the board to the std out
 void drawBoard() {
     cout << endl << endl << "Let's Play Tic Tac Toe!" << endl << endl;
     cout << " " << boardGrid[1] << " | " << boardGrid[2] << " | " << boardGrid[3] << endl;
@@ -31,69 +175,26 @@ void drawBoard() {
     cout << " " << boardGrid[7] << " | " << boardGrid[8] << " | " << boardGrid[9] << endl;
 }
 
+//\
+Generates random numbers from 1-9 and returns the first \
+one that is an unoccupied board space
 char getComputerMove() {
-	int tempRandom = (rand() % 9) + 1;
+    int tempRandom;
+    do {
+        tempRandom = (rand() % 9) + 1;
+    } while (boardGrid[tempRandom] == 'X' || boardGrid[tempRandom] == 'O');
 	return tempRandom;
 }
 
+//\
+Main program function, kicks off the main game thread
 int main() {
-	srand(time(NULL));
-	int player = 1, anyoneWonYet, computerMove;
-    char symbol;
+    srand(time(NULL));
+	
+    pthread_t mainGameThread;
+    pthread_create(&mainGameThread, NULL, &game, NULL);
 
-    do {
-        drawBoard();
-        player = (player % 2) ? 1 : 2;
+    pthread_join(mainGameThread, NULL);
 
-        do {
-        	computerMove = getComputerMove();
-        } while (boardGrid[computerMove] == 'X' || boardGrid[computerMove] == 'O');
-
-        symbol=(player == 1) ? 'X' : 'O';
-
-        if (computerMove == 1 && boardGrid[1] == '1') {
-        	boardGrid[1] = symbol;
-        }
-        else if (computerMove == 2 && boardGrid[2] == '2') {
-        	boardGrid[2] = symbol;
-        }
-        else if (computerMove == 3 && boardGrid[3] == '3') {
-        	boardGrid[3] = symbol;
-        }
-        else if (computerMove == 4 && boardGrid[4] == '4') {
-        	boardGrid[4] = symbol;
-        }
-        else if (computerMove == 5 && boardGrid[5] == '5') {
-        	boardGrid[5] = symbol;
-        }
-        else if (computerMove == 6 && boardGrid[6] == '6') {
-        	boardGrid[6] = symbol;
-        }
-        else if (computerMove == 7 && boardGrid[7] == '7') {
-        	boardGrid[7] = symbol;
-        }
-        else if (computerMove == 8 && boardGrid[8] == '8') {
-        	boardGrid[8] = symbol;
-        }
-        else if (computerMove == 9 && boardGrid[9] == '9') {
-        	boardGrid[9] = symbol;
-        }
-
-        anyoneWonYet = hasSomeoneWon();
-
-        player++;
-    } while(anyoneWonYet == -1);
-
-    drawBoard();
-
-    if(anyoneWonYet == 1) {
-    	cout << "Player " << --player << " win ";
-    }
-    else {
-    	cout << "No one wins!";
-    }
-
-    cin.ignore();
-    cin.get();
     return 0;
 }
