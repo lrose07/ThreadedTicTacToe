@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -Wall -std=c++11 -static -pthread
+CXXFLAGS = -std=c++11 -static -pthread
 LDFLAGS =
 OBJFILES = main.o
 TARGET = TTT

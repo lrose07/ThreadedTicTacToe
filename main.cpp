@@ -42,15 +42,18 @@ void processDraw();
 //\
 Thread function for player 1
 void* playerOneTurn(void*) {
-    while(true) {
+    while(!gameWon) {
+        pthread_mutex_lock(&mutex);
         if(isPlayerOneTurn) {
-            pthread_mutex_lock(&mutex);
+            cout << endl << "Player one moving" << endl;
             int computerMove = getComputerMove();
             symbol = 'X';
             boardGrid[computerMove] = symbol;
+            lastToMove = 1;
+            isPlayerOneTurn = false;
+            playerTurn = 0;
         }
-        lastToMove = 1;
-        isPlayerOneTurn = false;
+
         pthread_mutex_unlock(&mutex);
     }
 }
@@ -58,15 +61,18 @@ void* playerOneTurn(void*) {
 //\
 Thread function for player 2
 void* playerTwoTurn(void*) {
-    while(true) {
+    while(!gameWon) {
+        pthread_mutex_lock(&mutex);
         if (isPlayerTwoTurn) {
-            pthread_mutex_lock(&mutex);
+            cout << endl << "Player two moving" << endl;
             int computerMove = getComputerMove();
             symbol = 'O';
             boardGrid[computerMove] = symbol;
+            lastToMove = 2;
+            isPlayerTwoTurn = false;
+            playerTurn = 0;
         }
-        lastToMove = 2;
-        isPlayerTwoTurn = false;
+ 
         pthread_mutex_unlock(&mutex);
     }
 }
@@ -74,6 +80,9 @@ void* playerTwoTurn(void*) {
 //\
 Thread function for the main game
 void* game(void*) {
+
+    cout << "Player 1 thread created" << endl;
+    cout << "Player 2 thread created" << endl;
 
     pthread_t p1Thread;
     pthread_create(&p1Thread, NULL, &playerOneTurn, NULL);
@@ -84,7 +93,7 @@ void* game(void*) {
         pthread_mutex_lock(&mutex);
 
         if (playerTurn == 0) {
-            cout << "game thread checking stuff" << endl;
+            cout << endl << "game thread checking stuff" << endl;
             drawBoard();
             if (hasSomeoneWon() == 1) {
                 processWinner();
@@ -101,19 +110,7 @@ void* game(void*) {
                     isPlayerOneTurn = true;
                 }
             }
-
-        } else if (playerTurn == 1) {
-            cout << "Player one moving" << endl;
-            isPlayerOneTurn = true;
-            isPlayerTwoTurn = false;
-            playerTurn = 0;
-        } else if (playerTurn == 2) {
-            cout << "Player two moving" << endl;
-            isPlayerOneTurn = false;
-            isPlayerTwoTurn = true;
-            playerTurn = 0;
-        }
-
+        } 
         pthread_mutex_unlock(&mutex);
     }
 
@@ -132,14 +129,14 @@ void processWinner() {
     } else if (lastToMove == 2) {
         winner = 2;
     }
-    cout << "Player " << winner << " win " << endl;
+    cout << endl << "Player " << winner << " win " << endl;
 }
 
 //\
 Outputs when all spaces have been filled and \
 neither player satisfies the win condition
 void processDraw() {
-    cout << "No one wins!" << endl;
+    cout << endl << "No one wins!" << endl;
 }
 
 //\
@@ -167,7 +164,7 @@ int hasSomeoneWon() {
 //\
 Draws the board to the std out
 void drawBoard() {
-    cout << endl << endl << "Let's Play Tic Tac Toe!" << endl << endl;
+    cout << endl;
     cout << " " << boardGrid[1] << " | " << boardGrid[2] << " | " << boardGrid[3] << endl;
     cout << "---+---+---" << endl;
     cout << " " << boardGrid[4] << " | " << boardGrid[5] << " | " << boardGrid[6] << endl;
@@ -190,11 +187,15 @@ char getComputerMove() {
 Main program function, kicks off the main game thread
 int main() {
     srand(time(NULL));
+
+    cout << "Main thread created" << endl;
 	
     pthread_t mainGameThread;
     pthread_create(&mainGameThread, NULL, &game, NULL);
 
     pthread_join(mainGameThread, NULL);
+
+    cout << "All threads destroyed" << endl;
 
     return 0;
 }
